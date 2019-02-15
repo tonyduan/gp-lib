@@ -10,9 +10,7 @@ We draw inspiration from the Scikit-Learn implementation [2].
 
 #### Usage
 
-```python
-from gp import ConstantMeanGP
-```
+Todo.
 
 For further details the `examples/` folder.
 
