@@ -1,0 +1,5 @@
+
+
+
+class SparseGaussianProcess(object):
+    pass
