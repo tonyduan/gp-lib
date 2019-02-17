@@ -12,3 +12,6 @@ def gaussian_entropy(sigma):
 
 def r2_score(obs, pred):
     return 1 - np.sum((obs - pred) ** 2) / np.sum((obs - np.mean(obs)) ** 2)
+
+def ece_score(obs, mu, sigma):
+    pass
