@@ -4,7 +4,8 @@ import scipy.stats
 
 
 def gaussian_loglik(obs, mu, sigma):
-    return sp.stats.multivariate_normal.logpdf(obs, mean=mu, cov=sigma)
+    m = mu.shape[0]
+    return sp.stats.multivariate_normal.logpdf(obs, mean=mu, cov=sigma) / m
 
 def gaussian_entropy(sigma):
     n, n = sigma.shape

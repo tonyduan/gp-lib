@@ -36,16 +36,17 @@ class ConstantMeanGP(GaussianProcess):
         -------
         loglik: marginal log-likelihood of observed data
         """
+        m, n = x_tr.shape
         y_tr = y_tr - self.mean
-        k_tr = self.kernel(x_tr, x_tr) + self.noise_lvl * np.eye(x_tr.shape[0])
+        k_tr = self.kernel(x_tr, x_tr) + self.noise_lvl * np.eye(m)
         l_tr = np.linalg.cholesky(k_tr)
         alpha = np.linalg.solve(l_tr.T, np.linalg.solve(l_tr, y_tr)).squeeze()
         self.cache.update({
             "x_tr": x_tr, "y_tr": y_tr, "l_tr": l_tr, "alpha": alpha
         })
-        return (-np.sum([np.log(l_tr[i,i]) for i in range(y_tr.shape[0])]) \
+        return (-np.sum(np.log(np.diag(l_tr))) \
                 -0.5 * np.dot(y_tr, alpha) \
-                -0.5 * y_tr.shape[0] * np.log(2 * np.pi)) / y_tr.shape[0]
+                -0.5 * m * np.log(2 * np.pi)) / m
 
     def predict(self, x_te):
         """
@@ -58,12 +59,13 @@ class ConstantMeanGP(GaussianProcess):
         mean: m-length array of predicted mean
         var: m x m array of predicted variance
         """
+        m, n = x_te.shape
         k_tr_te = self.kernel(self.cache["x_tr"], x_te)
-        k_te = self.kernel(x_te, x_te)
+        k_te = self.kernel(x_te, x_te) + self.noise_lvl * np.eye(m)
         mean = np.dot(k_tr_te.T, self.cache["alpha"])
         v = np.linalg.solve(self.cache["l_tr"], k_tr_te)
         var = k_te - np.dot(v.T, v)
-        return self.mean + mean, var + self.noise_lvl * np.eye(x_te.shape[0])
+        return self.mean + mean, var
 
 
 class StochasticMeanGP(GaussianProcess):
@@ -100,7 +102,8 @@ class StochasticMeanGP(GaussianProcess):
         -------
         loglik: marginal log-likelihood of training data
         """
-        k_tr = self.kernel(x_tr, x_tr) + self.noise_lvl * np.eye(x_tr.shape[0])
+        m, n = x_tr.shape
+        k_tr = self.kernel(x_tr, x_tr) + self.noise_lvl * np.eye(m)
         l_tr = np.linalg.cholesky(k_tr)
         l_tr_inv = np.linalg.inv(l_tr)
         alpha = np.linalg.solve(l_tr.T, np.linalg.solve(l_tr, y_tr)).squeeze()
@@ -112,7 +115,11 @@ class StochasticMeanGP(GaussianProcess):
             "x_tr": x_tr, "y_tr": y_tr, "l_tr": l_tr, "l_tr_inv": l_tr_inv,
             "alpha": alpha, "beta": beta, "zeta": zeta, "h_tr": h_tr
         })
-        return
+        delta = np.dot(h_tr, self.prior_mean) - y_tr
+        psi = k_tr + np.linalg.multi_dot([h_tr, self.prior_var, h_tr.T])
+        return (-np.sum(np.log(np.diag(np.linalg.cholesky(psi)))) \
+                -0.5 * np.dot(delta, np.linalg.solve(psi, delta)) \
+                -0.5 * m * np.log(2 * np.pi)) / m
 
     def predict(self, x_te, h_te):
         """
@@ -126,8 +133,9 @@ class StochasticMeanGP(GaussianProcess):
         mean: m-length array of predicted mean
         var: m x m array of predicted variance
         """
+        m, n = x_te.shape
         k_tr_te = self.kernel(self.cache["x_tr"], x_te)
-        k_te = self.kernel(x_te, x_te)
+        k_te = self.kernel(x_te, x_te) + self.noise_lvl * np.eye(m)
         mean_gp = np.dot(k_tr_te.T, self.cache["alpha"])
         v = np.linalg.solve(self.cache["l_tr"], k_tr_te)
         var_gp = k_te - np.dot(v.T, v)
@@ -136,7 +144,7 @@ class StochasticMeanGP(GaussianProcess):
                                           self.cache["l_tr_inv"], k_tr_te])
         mean = mean_gp + np.dot(r.T, self.cache["beta"])
         var = var_gp + np.linalg.multi_dot([r.T, self.cache["zeta"], r])
-        return mean, var + self.noise_lvl * np.eye(x_te.shape[0])
+        return mean, var
 
     def get_posterior_beta(self):
         """
@@ -148,5 +156,5 @@ class StochasticMeanGP(GaussianProcess):
         var: p x p array for variance of β
         """
         if not self.cache:
-            raise ValueError("")
+            raise ValueError("GP has not yet been fit!")
         return self.cache["beta"], self.cache["zeta"]
