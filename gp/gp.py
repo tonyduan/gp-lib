@@ -42,8 +42,8 @@ class ConstantMeanGP(GaussianProcess):
         self.cache.update({
             "x_tr": x_tr, "y_tr": y_tr, "l_tr": l_tr, "alpha": alpha
         })
-        return (-0.5 * np.dot(y_tr, alpha) \
-                - np.log(np.linalg.det(l_tr)) \
+        return (-np.log(np.linalg.det(l_tr)) \
+                -0.5 * np.dot(y_tr, alpha) \
                 -0.5 * y_tr.shape[0] * np.log(2 * np.pi)) / y_tr.shape[0]
 
     def predict(self, x_te):
@@ -62,18 +62,7 @@ class ConstantMeanGP(GaussianProcess):
         mean = np.dot(k_tr_te.T, self.cache["alpha"])
         v = np.linalg.solve(self.cache["l_tr"], k_tr_te)
         var = k_te - np.dot(v.T, v)
-        return self.mean + mean, var
-
-    def calc_test_loglik(self, y_te, mean, var):
-        """
-        Parameters
-        ----------
-        y_te: m-length array of test observations
-        mean: m-length array of predicted mean
-        var: m x m array of predicted variance
-        """
-        sigma = var + self.noise_lvl * np.eye(y_te.shape[0])
-        return gaussian_loglik(y_te - self.mean, mean, sigma)
+        return self.mean + mean, var + self.noise_lvl * np.eye(x_te.shape[0])
 
 
 class StochasticMeanGP(GaussianProcess):
@@ -138,6 +127,7 @@ class StochasticMeanGP(GaussianProcess):
 
     def get_posterior_beta(self):
         """
+
         """
         if not self.cache:
             raise ValueError("")

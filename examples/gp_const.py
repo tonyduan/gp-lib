@@ -21,48 +21,53 @@ def plot_predictions(x_tr, y_tr, x_te, mean, var):
     plt.scatter(x_tr.squeeze(), y_tr, s=3, marker="x", color="black")
 
 
+def plot_calibration(predicted, empirical):
+    slope, intcpt = np.polyfit(predicted, empirical, deg=1)
+    x = np.linspace(0, 1)
+    y = x * slope + intcpt
+    plt.figure(figsize=(6, 6))
+    plt.scatter(predicted, empirical, marker="x", color="black")
+    plt.plot(x, x, linestyle="--", color="grey")
+    plt.plot(x, y, linestyle="--", color="darkgreen")
+    plt.xlim(0, 1)
+    plt.ylim(0, 1)
+
+
+def summarize_gp_fit(gp, x_tr, y_tr, x_te, y_te):
+    marginal_loglik = gp.fit(x_tr, y_tr)
+    mean, var = gp.predict(x_te)
+    cal, predicted, empirical = cal_error(y_te, mean, var)
+    print("Marginal log-likelihood:", marginal_loglik)
+    print("Test log-likelihoood:", gaussian_loglik(y_te, mean, var))
+    print("Calibration error:", cal)
+    plot_predictions(x_tr, y_tr, x_te, mean, var)
+    plt.show()
+    plot_calibration(predicted, empirical)
+    plt.show()
+
+
 if __name__ == "__main__":
 
     print("== Data Set 1")
-    x_tr, y_tr = gen_data()
-    x_te, _ = gen_data(100, bound=2)
+    x_tr, y_tr = gen_data(100, bound=1)
+    x_te, y_te = gen_data(100, bound=1)
 
     print("== Squared Exponential Kernel")
     gp = ConstantMeanGP(0, SquaredExponentialKernel(1), 0.1)
-    marginal_loglik = gp.fit(x_tr, y_tr)
-    mean, var = gp.predict(x_te)
-
-    print("Marginal log-likelihood:", marginal_loglik)
-    plot_predictions(x_tr, y_tr, x_te, mean, var)
-    plt.show()
+    summarize_gp_fit(gp, x_tr, y_tr, x_te, y_te)
 
     print("== Dot Product Kernel")
     gp = ConstantMeanGP(0, DotProductKernel(), 0.1)
-    marginal_loglik = gp.fit(x_tr, y_tr)
-    mean, var = gp.predict(x_te)
-
-    print("Marginal log-likelihood:", marginal_loglik)
-    plot_predictions(x_tr, y_tr, x_te, mean, var)
-    plt.show()
+    summarize_gp_fit(gp, x_tr, y_tr, x_te, y_te)
 
     print("== Data Set 2")
-    x_tr, y_tr = gen_data(deg=1)
-    x_te, _ = gen_data(100, bound=2)
+    x_tr, y_tr = gen_data(50, deg=1, bound=1, intcpt=-1)
+    x_te, y_te = gen_data(100, deg=1, bound=2, intcpt=-1)
 
     print("== Dot Product Kernel")
     gp = ConstantMeanGP(0, DotProductKernel(), 0.1)
-    marginal_loglik = gp.fit(x_tr, y_tr)
-    mean, var = gp.predict(x_te)
-
-    print("Marginal log-likelihood:", marginal_loglik)
-    plot_predictions(x_tr, y_tr, x_te, mean, var)
-    plt.show()
+    summarize_gp_fit(gp, x_tr, y_tr, x_te, y_te)
 
     print("== Dot Product Kernel")
-    gp = ConstantMeanGP(-0.5, DotProductKernel(), 0.1)
-    marginal_loglik = gp.fit(x_tr, y_tr)
-    mean, var = gp.predict(x_te)
-
-    print("Marginal log-likelihood:", marginal_loglik)
-    plot_predictions(x_tr, y_tr, x_te, mean, var)
-    plt.show()
+    gp = ConstantMeanGP(-1, DotProductKernel(), 0.1)
+    summarize_gp_fit(gp, x_tr, y_tr, x_te, y_te)

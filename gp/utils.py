@@ -13,5 +13,31 @@ def gaussian_entropy(sigma):
 def r2_score(obs, pred):
     return 1 - np.sum((obs - pred) ** 2) / np.sum((obs - np.mean(obs)) ** 2)
 
-def ece_score(obs, mu, sigma):
-    pass
+def cal_error(obs, mu, sigma, bins=5):
+    """
+    Unweighted regression calibration error for GP predictions.
+
+    We calculate the mean-squared error between predicted versus observed
+    empirical CDFs, for the specified number of equally spaced bins on the
+    interval [0,1].
+
+    [Equation (9), Kuleshov et. al. 2018]
+
+    Parameters
+    ----------
+    obs: m-length array of observations
+    mu: m-length array of predicted means
+    sigma: m x m array of predicted covariance
+    bins: number of bins at which to evaluate
+
+    Returns
+    -------
+    cal_error: float
+    predicted: predicted CDFs corresponding to each bin
+    empirical: observed CDFs corresponding to each bin
+    """
+    sigmas = np.diag(sigma)
+    quantiles = sp.stats.norm.cdf(obs, mu, sigmas)
+    predicted = np.arange(1/bins, 1+1/bins, 1/bins)
+    empirical = np.array([np.mean(quantiles < p) for p in predicted])
+    return np.sum((predicted - empirical) ** 2) / bins, predicted, empirical
