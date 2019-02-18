@@ -18,6 +18,7 @@ class ConstantMeanGP(GaussianProcess):
     Parameters
     ----------
     mean: float of constant mean to be subtracted from labels
+    kernel: Kernel used (incororates hyperparameters)
     noise_lvl: float hyper-parameter, level of noise in observations
     """
     def __init__(self, mean, kernel, noise_lvl):
@@ -42,7 +43,7 @@ class ConstantMeanGP(GaussianProcess):
         self.cache.update({
             "x_tr": x_tr, "y_tr": y_tr, "l_tr": l_tr, "alpha": alpha
         })
-        return (-np.log(np.linalg.det(l_tr)) \
+        return (-np.sum([np.log(l_tr[i,i]) for i in range(y_tr.shape[0])]) \
                 -0.5 * np.dot(y_tr, alpha) \
                 -0.5 * y_tr.shape[0] * np.log(2 * np.pi)) / y_tr.shape[0]
 
@@ -75,7 +76,10 @@ class StochasticMeanGP(GaussianProcess):
 
     Parameters:
     -----------
-    prior_mean:
+    prior_mean: p-length array of prior mean over β
+    prior_var: p x p array of prior variance ovoer β
+    kernel: Kernel used (incororates hyperparameters)
+    noise_lvl: float hyper-parameter, level of noise in observations
     """
     def __init__(self, prior_mean, prior_var, kernel, noise_lvl):
         super().__init__(kernel, noise_lvl)
@@ -112,6 +116,15 @@ class StochasticMeanGP(GaussianProcess):
 
     def predict(self, x_te, h_te):
         """
+        Parameters
+        ----------
+        x_te: m x n array of test data
+        h_te: m x p array of test data
+
+        Returns
+        -------
+        mean: m-length array of predicted mean
+        var: m x m array of predicted variance
         """
         k_tr_te = self.kernel(self.cache["x_tr"], x_te)
         k_te = self.kernel(x_te, x_te)
@@ -123,11 +136,16 @@ class StochasticMeanGP(GaussianProcess):
                                           self.cache["l_tr_inv"], k_tr_te])
         mean = mean_gp + np.dot(r.T, self.cache["beta"])
         var = var_gp + np.linalg.multi_dot([r.T, self.cache["zeta"], r])
-        return mean, var
+        return mean, var + self.noise_lvl * np.eye(x_te.shape[0])
 
     def get_posterior_beta(self):
         """
+        After fitting the GP, return the posterior β in the model.
 
+        Returns
+        -------
+        mean: p-length array for mean of β
+        var: p x p array for variance of β
         """
         if not self.cache:
             raise ValueError("")

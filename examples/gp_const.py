@@ -49,15 +49,11 @@ def summarize_gp_fit(gp, x_tr, y_tr, x_te, y_te):
 if __name__ == "__main__":
 
     print("== Data Set 1")
-    x_tr, y_tr = gen_data(100, bound=1)
-    x_te, y_te = gen_data(100, bound=1)
+    x_tr, y_tr = gen_data(500, deg=2, noise=0.1, bound=1)
+    x_te, y_te = gen_data(500, deg=2, noise=0.1, bound=1)
 
     print("== Squared Exponential Kernel")
-    gp = ConstantMeanGP(0, SquaredExponentialKernel(1), 0.1)
-    summarize_gp_fit(gp, x_tr, y_tr, x_te, y_te)
-
-    print("== Dot Product Kernel")
-    gp = ConstantMeanGP(0, DotProductKernel(), 0.1)
+    gp = ConstantMeanGP(0, SquaredExponentialKernel(1), 0.01)
     summarize_gp_fit(gp, x_tr, y_tr, x_te, y_te)
 
     print("== Data Set 2")
@@ -65,9 +61,9 @@ if __name__ == "__main__":
     x_te, y_te = gen_data(100, deg=1, bound=2, intcpt=-1)
 
     print("== Dot Product Kernel")
-    gp = ConstantMeanGP(0, DotProductKernel(), 0.1)
+    gp = ConstantMeanGP(0, DotProductKernel(), 0.01)
     summarize_gp_fit(gp, x_tr, y_tr, x_te, y_te)
 
     print("== Dot Product Kernel")
-    gp = ConstantMeanGP(-1, DotProductKernel(), 0.1)
+    gp = ConstantMeanGP(-1, DotProductKernel(), 0.01)
     summarize_gp_fit(gp, x_tr, y_tr, x_te, y_te)

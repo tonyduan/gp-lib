@@ -37,7 +37,7 @@ def cal_error(obs, mu, sigma, bins=5):
     empirical: observed CDFs corresponding to each bin
     """
     sigmas = np.diag(sigma)
-    quantiles = sp.stats.norm.cdf(obs, mu, sigmas)
+    quantiles = sp.stats.norm.cdf(obs, mu, np.sqrt(sigmas))
     predicted = np.arange(1/bins, 1+1/bins, 1/bins)
     empirical = np.array([np.mean(quantiles < p) for p in predicted])
     return np.sum((predicted - empirical) ** 2) / bins, predicted, empirical
