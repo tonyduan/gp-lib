@@ -4,7 +4,7 @@ Last update: February 2019.
 
 ---
 
-![Figure](figs/example.png|width=200)
+<img src="https://github.com/tonyduan/gaussian-processes/raw/master/figs/example.png" width="480">
 
 Lightweight implementation of Gaussian processes [1] in Python.
 
