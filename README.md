@@ -4,6 +4,8 @@ Last update: February 2019.
 
 ---
 
+![Figure](figs/example.png)
+
 Lightweight implementation of Gaussian processes [1] in Python.
 
 Includes an implementation of a greedy selection algorithm for near-optimal sensor placement in Gaussian processes [2]. 
