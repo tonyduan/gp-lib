@@ -4,9 +4,11 @@ Last update: February 2019.
 
 ---
 
+![Figure](figs/example.png)
+
 Lightweight implementation of Gaussian processes [1] in Python.
 
-We draw inspiration from the Scikit-Learn implementation [2].
+Includes an implementation of a greedy selection algorithm for near-optimal sensor placement in Gaussian processes [2]. 
 
 #### Usage
 
@@ -18,7 +20,7 @@ For further details the `examples/` folder.
 
 [1] Carl Edward Rasmussen and Christopher K. I. Williams. 2005. Gaussian Processes for Machine Learning (Adaptive Computation and Machine Learning). The MIT Press.
 
-[2] Fabian Pedregosa, Gaël Varoquaux, Alexandre Gramfort, Vincent Michel, Bertrand Thirion, Olivier Grisel, Mathieu Blondel, Peter Prettenhofer, Ron Weiss, Vincent Dubourg, Jake Vanderplas, Alexandre Passos, David Cournapeau, Matthieu Brucher, Matthieu Perrot, and Édouard Duchesnay. 2011. Scikit-learn: Machine Learning in Python. J. Mach. Learn. Res. 12 (November 2011), 2825-2830.
+[2] Andreas Krause, Ajit Singh, and Carlos Guestrin. 2008. Near-Optimal Sensor Placements in Gaussian Processes: Theory, Efficient Algorithms and Empirical Studies. J. Mach. Learn. Res. 9 (June 2008), 235-284.
 
 #### License
 
