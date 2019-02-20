@@ -1,5 +1,4 @@
 import numpy as np
-from gp.utils import *
 
 
 class GaussianProcess(object):

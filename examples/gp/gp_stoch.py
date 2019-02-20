@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from gp.gp import *
 from gp.kernels import *
+from gp.utils import *
 
 
 def gen_data(n=50, bound=1, deg=2, beta=1, noise=0.1, intcpt=-1):
@@ -51,7 +52,7 @@ if __name__ == "__main__":
     beta_mean, beta_var = gp.get_posterior_beta()
     print("Posterior beta:", )
     print(f"Mean: {beta_mean.round(3)}")
-    print(f"Var: {beta_var.round(3)}")
+    print(f"Var:\n{beta_var.round(3)}")
 
     plot_predictions(x_tr, y_tr, x_te, mean, var)
     plt.show()

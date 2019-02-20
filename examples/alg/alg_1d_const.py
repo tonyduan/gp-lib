@@ -12,13 +12,6 @@ def gen_data(n=50, bound=1, deg=2, noise=0.1, intcpt=0):
     y = (x ** deg + noise * np.random.randn(*x.shape)).squeeze()
     return x, y
 
-def gen_data_stoch(n=50, bound=1, deg=2, beta=1, noise=0.1, intcpt=-1):
-    x = np.linspace(-bound, bound, n)[:, np.newaxis]
-    h = np.linspace(-bound, bound, n)[:, np.newaxis]
-    y = x ** deg + h * beta + noise * np.random.randn(*x.shape) + intcpt
-    y = y.squeeze()
-    return x, y, np.c_[h, np.ones_like(h)]
-
 
 def plot_predictions(x_tr, y_tr, x_te, mean, var):
     plt.figure(figsize=(8, 4))
@@ -41,12 +34,12 @@ if __name__ == "__main__":
     if args.verbose:
         logging.basicConfig()
 
-    x_tr, y_tr = gen_data(n=50, deg=3, noise=args.noise_lvl)
-    x_te, y_te = gen_data(n=50, deg=3, noise=args.noise_lvl)
+    x_tr, y_tr = gen_data(n=100, deg=2, noise=args.noise_lvl)
+    x_te, y_te = gen_data(n=100, deg=2, noise=args.noise_lvl)
 
     kernel = SquaredExponentialKernel(1)
-    gp_inst = lambda: ConstantMeanGP(0, kernel, args.noise_lvl)
-    idxs = pick_idxs_greedy(x_tr, y_tr, args.num_samples, gp_inst, 75)
+    gp_inst = lambda: ConstantMeanGP(0, kernel, args.noise_lvl ** 2)
+    idxs = pick_idxs_const_gp(x_tr, y_tr, args.num_samples, gp_inst, 75)
 
     gp = gp_inst()
     train_loglik = gp.fit(x_tr[idxs,:], y_tr[idxs])
@@ -55,7 +48,7 @@ if __name__ == "__main__":
     print("== Greedy")
     print("R2:", r2_score(y_te, mean))
     print("Train log-likelihood:", train_loglik)
-    print("Test log-likelihood:", gp.calc_test_loglik(y_te, mean, var))
+    print("Test log-likelihood:", gaussian_loglik(y_te, mean, var))
 
     if args.show_plots:
         for i in range(1, len(idxs)):
@@ -70,7 +63,7 @@ if __name__ == "__main__":
     print("== Random")
     print("R2:", r2_score(y_te, mean))
     print("Train log-likelihood:", train_loglik)
-    print("Test log-likelihood:", gp.calc_test_loglik(y_te, mean, var))
+    print("Test log-likelihood:", gaussian_loglik(y_te, mean, var))
 
     if args.show_plots:
         for i in range(1, len(idxs)):

@@ -8,7 +8,7 @@ Lightweight implementation of Gaussian processes [1] in Python.
 
 At the core, a Gaussian process is a collection of jointly Gaussian random variables specified by a mean and covariance function. Predictions are made by conditioning on a subset of variables.
 
-<p align="center"><img src="https://rawgit.com/in	git@github.com:tonyduan/gaussian-processes/master/svgs/243594fe8297a36614516f9315de7928.svg?invert_in_darkmode" align=middle width=86.99211675pt height=16.438356pt/></p>
+$$p(Y|X) ~ N()$$
 
 We implement as well a greedy selection algorithm for near-optimal sensor placement in Gaussian processes [2]. 
 
