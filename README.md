@@ -8,11 +8,11 @@ Lightweight implementation of Gaussian processes [1] in Python.
 
 At the core, a Gaussian process is a collection of jointly Gaussian random variables specified by a mean and covariance function.
 
-<p align="center"><img src="https://rawgit.com/in	git@github.com:tonyduan/gaussian-processes/master/svgs/94c0b8af2d1d5c2f050c9d22036a4eca.svg?invert_in_darkmode" align=middle width=275.93443844999996pt height=17.031940199999998pt/></p>
+<p align="center"><img src="https://rawgit.com/in	git@github.com:tonyduan/gaussian-processes/master/svgs/d4494ebe03917e2db74c1cfffed7dbf4.svg?invert_in_darkmode" align=middle width=276.84432599999997pt height=17.031940199999998pt/></p>
 
 Predictions are made by conditioning on a subset of variables.
 
-<p align="center"><img src="https://rawgit.com/in	git@github.com:tonyduan/gaussian-processes/master/svgs/77b67b39f8b8d7daa8104d6075a5c7d3.svg?invert_in_darkmode" align=middle width=53.7272703pt height=16.438356pt/></p>
+<p align="center"><img src="https://rawgit.com/in	git@github.com:tonyduan/gaussian-processes/master/svgs/ce38bb7b817d1b445b973e28c496a270.svg?invert_in_darkmode" align=middle width=193.5563949pt height=16.438356pt/></p>
 
 We implement as well a greedy selection algorithm for near-optimal sensor placement in Gaussian processes [2]. 
 
