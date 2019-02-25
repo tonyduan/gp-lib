@@ -57,14 +57,15 @@ class SquaredExponentialKernel(Kernel):
         specify which dimensions of x and y to include in kernel calculation;
         if None, default to all dimensions
     """
-    def __init__(self, length_scale, dims=None):
+    def __init__(self, length_scale, sigma_sq=1, dims=None):
         self.length_scale = length_scale
+        self.sigma_sq = sigma_sq
         self.dims = dims
 
     def __call__(self, x, y):
         i = self.dims if self.dims is not None else np.arange(x.shape[1])
         dists = sp.spatial.distance.cdist(x[:,i], y[:,i], metric="sqeuclidean")
-        return np.exp(-0.5 * dists / self.length_scale ** 2)
+        return self.sigma_sq * np.exp(-0.5 * dists / self.length_scale ** 2)
 
 
 class DotProductKernel(Kernel):

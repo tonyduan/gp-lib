@@ -174,13 +174,14 @@ def pick_idxs_stoch_gp(x, y, h, count, gp_instantiation, epsilon_pctle=75,
     for k in range(count):
         max_val = np.max(deltas * mask)
         idxs_max = deltas * mask > max_val - mu * np.std(deltas * mask)
+        ratio = sum(idxs_max) / m
         i = np.random.choice(np.arange(m)[idxs_max])
         sel_idxs += [i]
         mask[i] = 0
         for j in filter(lambda l: mask[l], neighbors[i]):
             deltas[j] = entropy_trunc([j], sel_idxs) - \
                         entropy_trunc([j], all_idxs - {j} - set(sel_idxs))
-        logger.info(f"== Max delta: {max_val:.2f}, Ratio: {sum(idxs_max) / m}")
+        logger.info(f"== Iter: {k}, Delta: {max_val:.2f}, Ratio: {ratio:.2f}")
 
     return sel_idxs
 
