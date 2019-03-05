@@ -10,7 +10,7 @@ class GaussianProcess(object):
 
 class ConstantMeanGP(GaussianProcess):
     """
-    Deterministic mean (constant) Gaussian process.
+    Constant mean (deterministic) Gaussian process.
 
     [ Equation (2.19) and (2.30), Rasmussen and Williams, 2006 ]
 
@@ -44,7 +44,7 @@ class ConstantMeanGP(GaussianProcess):
             "x_tr": x_tr, "y_tr": y_tr, "l_tr": l_tr, "alpha": alpha
         })
         return (-np.sum(np.log(np.diag(l_tr))) \
-                -0.5 * np.dot(y_tr, alpha) \
+                -0.5 * y_tr @ alpha \
                 -0.5 * m * np.log(2 * np.pi)) / m
 
     def predict(self, x_te):
@@ -61,9 +61,9 @@ class ConstantMeanGP(GaussianProcess):
         m, n = x_te.shape
         k_tr_te = self.kernel(self.cache["x_tr"], x_te)
         k_te = self.kernel(x_te, x_te) + self.noise_lvl * np.eye(m)
-        mean = np.dot(k_tr_te.T, self.cache["alpha"])
+        mean = k_tr_te.T @ self.cache["alpha"]
         v = np.linalg.solve(self.cache["l_tr"], k_tr_te)
-        var = k_te - np.dot(v.T, v)
+        var = k_te - v.T @ v
         return self.mean + mean, var
 
 
@@ -87,7 +87,7 @@ class StochasticMeanGP(GaussianProcess):
         self.prior_mean = prior_mean
         self.prior_var = prior_var
         self.prior_prec = np.linalg.inv(prior_var)
-        self.prior_gamma = np.dot(self.prior_prec, self.prior_mean).squeeze()
+        self.prior_gamma = (self.prior_prec @ self.prior_mean).squeeze()
 
     def fit(self, x_tr, y_tr, h_tr):
         """
@@ -106,18 +106,17 @@ class StochasticMeanGP(GaussianProcess):
         l_tr = np.linalg.cholesky(k_tr)
         l_tr_inv = np.linalg.inv(l_tr)
         alpha = np.linalg.solve(l_tr.T, np.linalg.solve(l_tr, y_tr)).squeeze()
-        zeta = np.linalg.inv(self.prior_prec + \
-                             np.linalg.multi_dot([h_tr.T, l_tr_inv.T,
-                                                  l_tr_inv, h_tr]))
-        beta = np.dot(zeta, np.dot(h_tr.T, alpha) + self.prior_gamma)
+        zeta = np.linalg.inv(self.prior_prec + (h_tr.T @ l_tr_inv.T @
+                                                l_tr_inv @ h_tr))
+        beta = zeta @ (h_tr.T @ alpha + self.prior_gamma)
         self.cache.update({
             "x_tr": x_tr, "y_tr": y_tr, "l_tr": l_tr, "l_tr_inv": l_tr_inv,
             "alpha": alpha, "beta": beta, "zeta": zeta, "h_tr": h_tr
         })
-        delta = np.dot(h_tr, self.prior_mean) - y_tr
-        psi = k_tr + np.linalg.multi_dot([h_tr, self.prior_var, h_tr.T])
+        delta = h_tr @ self.prior_mean - y_tr
+        psi = k_tr + h_tr @ self.prior_var @ h_tr.T
         return (-np.sum(np.log(np.diag(np.linalg.cholesky(psi)))) \
-                -0.5 * np.dot(delta, np.linalg.solve(psi, delta)) \
+                -0.5 * delta @ np.linalg.solve(psi, delta) \
                 -0.5 * m * np.log(2 * np.pi)) / m
 
     def predict(self, x_te, h_te):
@@ -135,14 +134,13 @@ class StochasticMeanGP(GaussianProcess):
         m, n = x_te.shape
         k_tr_te = self.kernel(self.cache["x_tr"], x_te)
         k_te = self.kernel(x_te, x_te) + self.noise_lvl * np.eye(m)
-        mean_gp = np.dot(k_tr_te.T, self.cache["alpha"])
+        mean_gp = k_tr_te.T @ self.cache["alpha"]
         v = np.linalg.solve(self.cache["l_tr"], k_tr_te)
-        var_gp = k_te - np.dot(v.T, v)
-        r = h_te.T - np.linalg.multi_dot([self.cache["h_tr"].T,
-                                          self.cache["l_tr_inv"].T,
-                                          self.cache["l_tr_inv"], k_tr_te])
-        mean = mean_gp + np.dot(r.T, self.cache["beta"])
-        var = var_gp + np.linalg.multi_dot([r.T, self.cache["zeta"], r])
+        var_gp = k_te - v.T @ v
+        r = h_te.T - self.cache["h_tr"].T @ self.cache["l_tr_inv"].T @ \
+                     self.cache["l_tr_inv"] @ k_tr_te
+        mean = mean_gp + r.T @ self.cache["beta"]
+        var = var_gp + r.T @ self.cache["zeta"] @ r
         return mean, var
 
     def get_posterior_beta(self):

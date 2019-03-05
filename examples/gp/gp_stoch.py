@@ -38,8 +38,8 @@ def plot_calibration(predicted, empirical):
 
 if __name__ == "__main__":
 
-    x_tr, y_tr, h_tr = gen_data(100, deg=2, noise=0.1, intcpt=-2)
-    x_te, y_te, h_te = gen_data(100, deg=2, noise=0.1, bound=1, intcpt=-2)
+    x_tr, y_tr, h_tr = gen_data(200, deg=2, noise=0.1, intcpt=-2)
+    x_te, y_te, h_te = gen_data(200, deg=2, noise=0.1, bound=1, intcpt=-2)
 
     print("== Squared Exponential Kernel")
     gp = StochasticMeanGP(np.array([0, 0]), 5 * np.eye(2),

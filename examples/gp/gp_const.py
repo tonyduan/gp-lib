@@ -58,7 +58,7 @@ if __name__ == "__main__":
     summarize_gp_fit(gp, x_tr, y_tr, x_te, y_te)
 
     print("== Data Set 2")
-    x_tr, y_tr = gen_data(50, deg=1, bound=1, intcpt=-1)
+    x_tr, y_tr = gen_data(5, deg=1, bound=1, intcpt=-1)
     x_te, y_te = gen_data(100, deg=1, bound=2, intcpt=-1)
 
     print("== Dot Product Kernel")

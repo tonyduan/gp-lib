@@ -4,9 +4,9 @@ Last update: February 2019.
 
 ---
 
-Lightweight implementation of Gaussian processes [1] in Python.
+Lightweight implementation of Gaussian processes [1] for regression in Python.
 
-At the core, a Gaussian process is a collection of jointly Gaussian random variables specified by a mean (which below we assume to be zero) and covariance function.
+A Gaussian process is a collection of jointly Gaussian random variables specified by a mean (which below we assume to be zero) and covariance function between two data points.
 
 $$
 p(Y|X) \sim \mathcal{N}(0, \Sigma) \quad \quad \Sigma[i,j] = K(x_i, x_j)
@@ -18,7 +18,11 @@ $$
 p(Y|X',Y',X) \sim \mathcal{N}(\mu, \Sigma)\quad\quad \mu = K(X,X')K(X',X')^{-1}Y, \quad\quad\Sigma = K(X,X) - K(X,X')K(X',X')^{-1}K(X',X)
 $$
 
-We implement as well a greedy selection algorithm for near-optimal sensor placement in Gaussian processes [2]. 
+We implement as well a greedy selection algorithm for near-optimal sensor placement in Gaussian processes [2]. The intuition is that we want to pick a set of fixed size to maximize the *mutual information* between selected data points and remaining items.
+$$
+\mathcal{A} = \underset{\mathcal{A} \subset \mathcal{V}:|\mathcal{A}| = k}{\arg\max}\enspace I(\mathcal{A}; \mathcal{V} \setminus \mathcal{A})
+$$
+This process is approximated in a greedy manner.
 
 #### Usage
 
