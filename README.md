@@ -14,6 +14,8 @@ Predictions are made by conditioning on a subset of variables.
 
 <p align="center"><img alt="$$&#10;p(Y|X',Y',X) \sim \mathcal{N}(\mu, \Sigma)\quad\quad \mu = K(X,X')K(X',X')^{-1}Y, \quad\quad\Sigma = K(X,X) - K(X,X')K(X',X')^{-1}K(X',X)&#10;$$" src="svgs/4b5b660767d05920b7df1d15686f169e.svg" align="middle" width="802.3917957pt" height="18.312383099999998pt"/></p>
 
+---
+
 We implement as well a greedy selection algorithm for near-optimal sensor placement in Gaussian processes [2]. The intuition is that we want to pick a set of fixed size to maximize the *mutual information* between selected data points and remaining items.
 <p align="center"><img alt="$$&#10;\mathcal{A} = \underset{\mathcal{A} \subset \mathcal{V}:|\mathcal{A}| = k}{\arg\max}\enspace I(\mathcal{A}; \mathcal{V} \setminus \mathcal{A})&#10;$$" src="svgs/da12add3bd7a6c02b827fc1db32c4183.svg" align="middle" width="194.59628759999998pt" height="29.771669399999997pt"/></p>
 This process is approximated in a greedy manner.

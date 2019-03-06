@@ -18,6 +18,8 @@ $$
 p(Y|X',Y',X) \sim \mathcal{N}(\mu, \Sigma)\quad\quad \mu = K(X,X')K(X',X')^{-1}Y, \quad\quad\Sigma = K(X,X) - K(X,X')K(X',X')^{-1}K(X',X)
 $$
 
+---
+
 We implement as well a greedy selection algorithm for near-optimal sensor placement in Gaussian processes [2]. The intuition is that we want to pick a set of fixed size to maximize the *mutual information* between selected data points and remaining items.
 $$
 \mathcal{A} = \underset{\mathcal{A} \subset \mathcal{V}:|\mathcal{A}| = k}{\arg\max}\enspace I(\mathcal{A}; \mathcal{V} \setminus \mathcal{A})
