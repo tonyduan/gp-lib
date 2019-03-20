@@ -39,7 +39,7 @@ class ConstantMeanGP(GaussianProcess):
         y_tr = y_tr - self.mean
         k_tr = self.kernel(x_tr, x_tr) + self.noise_lvl * np.eye(m)
         l_tr = np.linalg.cholesky(k_tr)
-        alpha = np.linalg.solve(l_tr.T, np.linalg.solve(l_tr, y_tr)).squeeze()
+        alpha = np.linalg.solve(l_tr.T, np.linalg.solve(l_tr, y_tr))
         self.cache.update({
             "x_tr": x_tr, "y_tr": y_tr, "l_tr": l_tr, "alpha": alpha
         })
@@ -105,7 +105,7 @@ class StochasticMeanGP(GaussianProcess):
         k_tr = self.kernel(x_tr, x_tr) + self.noise_lvl * np.eye(m)
         l_tr = np.linalg.cholesky(k_tr)
         l_tr_inv = np.linalg.inv(l_tr)
-        alpha = np.linalg.solve(l_tr.T, np.linalg.solve(l_tr, y_tr)).squeeze()
+        alpha = np.linalg.solve(l_tr.T, np.linalg.solve(l_tr, y_tr))
         zeta = np.linalg.inv(self.prior_prec + (h_tr.T @ l_tr_inv.T @
                                                 l_tr_inv @ h_tr))
         beta = zeta @ (h_tr.T @ alpha + self.prior_gamma)
