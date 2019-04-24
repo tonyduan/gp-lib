@@ -6,6 +6,7 @@ class GaussianProcess(object):
         self.kernel = kernel
         self.noise_lvl = noise_lvl
         self.cache = {}
+        self.trained = False
 
 
 class ConstantMeanGP(GaussianProcess):
@@ -43,6 +44,7 @@ class ConstantMeanGP(GaussianProcess):
         self.cache.update({
             "x_tr": x_tr, "y_tr": y_tr, "l_tr": l_tr, "alpha": alpha
         })
+        self.trained = True
         return (-np.sum(np.log(np.diag(l_tr))) \
                 -0.5 * y_tr @ alpha \
                 -0.5 * m * np.log(2 * np.pi)) / m
@@ -59,6 +61,8 @@ class ConstantMeanGP(GaussianProcess):
         var: m x m array of predicted variance
         """
         m, n = x_te.shape
+        if not self.trained:
+            return self.mean, self.kernel(x_te, x_te)
         k_tr_te = self.kernel(self.cache["x_tr"], x_te)
         k_te = self.kernel(x_te, x_te) + self.noise_lvl * np.eye(m)
         mean = k_tr_te.T @ self.cache["alpha"]
@@ -115,6 +119,7 @@ class StochasticMeanGP(GaussianProcess):
         })
         delta = h_tr @ self.prior_mean - y_tr
         psi = k_tr + h_tr @ self.prior_var @ h_tr.T
+        self.trained = True
         return (-np.sum(np.log(np.diag(np.linalg.cholesky(psi)))) \
                 -0.5 * delta @ np.linalg.solve(psi, delta) \
                 -0.5 * m * np.log(2 * np.pi)) / m
@@ -132,6 +137,10 @@ class StochasticMeanGP(GaussianProcess):
         var: m x m array of predicted variance
         """
         m, n = x_te.shape
+        if not self.trained:
+            return h_te @ self.prior_mean, \
+                   self.kernel(x_te, x_te) + self.noise_lvl * np.eye(m) + \
+                   h_te @ self.prior_var @ h_te.T
         k_tr_te = self.kernel(self.cache["x_tr"], x_te)
         k_te = self.kernel(x_te, x_te) + self.noise_lvl * np.eye(m)
         mean_gp = k_tr_te.T @ self.cache["alpha"]
@@ -143,7 +152,7 @@ class StochasticMeanGP(GaussianProcess):
         var = var_gp + r.T @ self.cache["zeta"] @ r
         return mean, var
 
-    def get_posterior_beta(self):
+    def get_beta(self):
         """
         After fitting the GP, return the posterior β in the model.
 
@@ -152,6 +161,6 @@ class StochasticMeanGP(GaussianProcess):
         mean: p-length array for mean of β
         var: p x p array for variance of β
         """
-        if not self.cache:
-            raise ValueError("GP has not yet been fit!")
+        if not self.trained:
+            return self.prior_mean, self.prior_var
         return self.cache["beta"], self.cache["zeta"]

@@ -79,9 +79,10 @@ class DotProductKernel(Kernel):
         specify which dimensions of x and y to include in kernel calculation;
         if None, default to all dimensions
     """
-    def __init__(self, dims=None):
+    def __init__(self, sigma_sq=1, dims=None):
+        self.sigma_sq = sigma_sq
         self.dims = dims
 
     def __call__(self, x, y):
         i = self.dims if self.dims is not None else np.arange(x.shape[1])
-        return np.dot(x[:,i], y[:,i].T)
+        return self.sigma_sq * np.dot(x[:,i], y[:,i].T)
