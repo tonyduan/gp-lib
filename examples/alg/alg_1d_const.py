@@ -1,10 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from argparse import ArgumentParser
-from gp.gp import *
-from gp.kernels import *
-from gp.algs import *
-from gp.utils import *
+from gp_lib.gp import *
+from gp_lib.kernels import *
+from gp_lib.algs import *
+from gp_lib.utils import *
 
 
 def gen_data(n=50, bound=1, deg=2, noise=0.1, intcpt=0):

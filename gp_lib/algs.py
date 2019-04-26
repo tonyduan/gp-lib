@@ -1,6 +1,6 @@
 import numpy as np
 import logging
-from gp.utils import *
+from gp_lib.utils import *
 
 
 def pick_idxs(x, y, count, gp, epsilon_pctle=75, mu=0.1, h=None):

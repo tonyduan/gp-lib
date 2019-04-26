@@ -4,18 +4,18 @@ Last update: April 2019.
 
 ---
 
-Lightweight Python implementation of Gaussian processes [1] for regression.
+Lightweight Python library for Gaussian processes for regression [1].
 
-A Gaussian process is a collection of jointly Gaussian random variables specified by a mean (which below we assume to be zero) and covariance function between two data points.
+A Gaussian process specifies a collection of jointly Gaussian random variables specified by a mean (which below we assume to be zero) and covariance function between two data points.
 
 $$
-p(Y|X) \sim \mathcal{N}(0, \Sigma) \quad \quad \Sigma[i,j] = K(x_i, x_j)
+p(Y|X) \sim N(0, \Sigma) \quad \quad \Sigma[i,j] = K(x_i, x_j)
 $$
 
 Predictions are made by conditioning on a subset of variables.
 
 $$
-p(Y|X',Y',X) \sim \mathcal{N}(\mu, \Sigma)\quad\quad \mu = K(X,X')K(X',X')^{-1}Y, \quad\quad\Sigma = K(X,X) - K(X,X')K(X',X')^{-1}K(X',X)
+p(Y|X',Y',X) \sim N(\mu, \Sigma)\quad\quad \mu = K(X,X')K(X',X')^{-1}Y, \quad\quad\Sigma = K(X,X) - K(X,X')K(X',X')^{-1}K(X',X)
 $$
 
 #### Explicit basis functions
@@ -34,17 +34,19 @@ Often times the mean parameter itself will be of interest. After a set of observ
 $$
 \begin{align*}
 \mathbb{E}[\beta] & = (B^{-1} + HK^{-1}H^\intercal)^{-1}(HK^{-1}y + B^{-1}b)\\
-\mathrm{Var}[\beta] & = (B^{-1}+HK^{-1}H^\intercal)^{-1}.
+\mathrm{Var}[\beta] & = (B^{-1}+HK^{-1}H^\intercal)^{-1}
 \end{align*}
 $$
 
 #### Supported kernels
 
-Squared exponential kernel.
+Support for more kernels is expected to be added, but for now we support the following.
+
+*Squared exponential kernel*
 $$
 K_\mathrm{SE}(x,y) = \sigma^2\exp\left(-\frac{1}{2\ell^2}||x-y||^2_2\right)
 $$
-Dot product kernel.
+*Dot product kernel*
 $$
 K_\mathrm{dot}(x,y) = \sigma^2 x^\intercal y
 $$
@@ -61,7 +63,7 @@ This process is approximated in a greedy manner, picking out the next data point
 #### Usage
 
 ```python
-from gp.gp import ConstantMeanGP
+from gp_lib.gp import ConstantMeanGP
 
 # parameters are mean, kernel, noise level
 gp = ConstantMeanGP(0, SquaredExponentialKernel(10, 1), noise_lvl=0.01)

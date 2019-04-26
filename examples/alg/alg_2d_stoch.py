@@ -1,10 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from gp.algs import *
-from gp.gp import *
-from gp.kernels import *
 from argparse import ArgumentParser
+from mpl_toolkits.mplot3d import Axes3D
+from gp_lib.algs import *
+from gp_lib.gp import *
+from gp_lib.kernels import *
 
 
 def gen_data(n=20, bound=1, deg=2, beta=1, noise=0.1, intcpt=-1):

@@ -4,15 +4,15 @@ Last update: April 2019.
 
 ---
 
-Lightweight Python implementation of Gaussian processes [1] for regression.
+Lightweight Python library for Gaussian processes for regression [1].
 
-A Gaussian process is a collection of jointly Gaussian random variables specified by a mean (which below we assume to be zero) and covariance function between two data points.
+A Gaussian process specifies a collection of jointly Gaussian random variables specified by a mean (which below we assume to be zero) and covariance function between two data points.
 
-<p align="center"><img alt="$$&#10;p(Y|X) \sim \mathcal{N}(0, \Sigma) \quad \quad \Sigma[i,j] = K(x_i, x_j)&#10;$$" src="svgs/50927beb4a6dc77c7356429e8b72204e.svg" align="middle" width="294.63350235pt" height="17.031940199999998pt"/></p>
+<p align="center"><img alt="$$&#10;p(Y|X) \sim N(0, \Sigma) \quad \quad \Sigma[i,j] = K(x_i, x_j)&#10;$$" src="svgs/57904d52e3fb892af9f28d9b82a45da8.svg" align="middle" width="293.72361479999995pt" height="17.031940199999998pt"/></p>
 
 Predictions are made by conditioning on a subset of variables.
 
-<p align="center"><img alt="$$&#10;p(Y|X',Y',X) \sim \mathcal{N}(\mu, \Sigma)\quad\quad \mu = K(X,X')K(X',X')^{-1}Y, \quad\quad\Sigma = K(X,X) - K(X,X')K(X',X')^{-1}K(X',X)&#10;$$" src="svgs/4b5b660767d05920b7df1d15686f169e.svg" align="middle" width="802.3917957pt" height="18.312383099999998pt"/></p>
+<p align="center"><img alt="$$&#10;p(Y|X',Y',X) \sim N(\mu, \Sigma)\quad\quad \mu = K(X,X')K(X',X')^{-1}Y, \quad\quad\Sigma = K(X,X) - K(X,X')K(X',X')^{-1}K(X',X)&#10;$$" src="svgs/eee976b0b8359ea41e650a6caab13130.svg" align="middle" width="801.4819081499999pt" height="18.312383099999998pt"/></p>
 
 #### Explicit basis functions
 
@@ -23,13 +23,15 @@ Specifically, we model a GP with mean given by <img alt="$h(x)^\intercal\beta$" 
 Note that this is equivalent to the following GP. However, for issues of numerical stability it is recommended to use the explicit closed form solutions that we provide instead of naively implementing the below.
 <p align="center"><img alt="$$&#10;g(x) \sim GP(h(x)^\intercal b, k(x,x') + h(x)^\intercal B h(x'))&#10;$$" src="svgs/554de23245299f18d8cfe7597f274d3d.svg" align="middle" width="307.485255pt" height="17.2895712pt"/></p>
 Often times the mean parameter itself will be of interest. After a set of observations, its posterior distribution will be normally distributed (thanks to conjugacy of the normal distribution) with the following parameters.
-<p align="center"><img alt="$$&#10;\begin{align*}&#10;\mathbb{E}[\beta] &amp; = (B^{-1} + HK^{-1}H^\intercal)^{-1}(HK^{-1}y + B^{-1}b)\\&#10;\mathrm{Var}[\beta] &amp; = (B^{-1}+HK^{-1}H^\intercal)^{-1}.&#10;\end{align*}&#10;$$" src="svgs/728ae70654fb30fac13626dce95bea6c.svg" align="middle" width="346.657179pt" height="45.0083832pt"/></p>
+<p align="center"><img alt="$$&#10;\begin{align*}&#10;\mathbb{E}[\beta] &amp; = (B^{-1} + HK^{-1}H^\intercal)^{-1}(HK^{-1}y + B^{-1}b)\\&#10;\mathrm{Var}[\beta] &amp; = (B^{-1}+HK^{-1}H^\intercal)^{-1}&#10;\end{align*}&#10;$$" src="svgs/d605fe355afd910d88d3ce8fb141a7b8.svg" align="middle" width="346.657179pt" height="45.0083832pt"/></p>
 
 #### Supported kernels
 
-Squared exponential kernel.
+Support for more kernels is expected to be added, but for now we support the following.
+
+*Squared exponential kernel*
 <p align="center"><img alt="$$&#10;K_\mathrm{SE}(x,y) = \sigma^2\exp\left(-\frac{1}{2\ell^2}||x-y||^2_2\right)&#10;$$" src="svgs/4445020a76e41da68289c67c05953eca.svg" align="middle" width="266.03250629999997pt" height="39.452455349999994pt"/></p>
-Dot product kernel.
+*Dot product kernel*
 <p align="center"><img alt="$$&#10;K_\mathrm{dot}(x,y) = \sigma^2 x^\intercal y&#10;$$" src="svgs/a8284d2ae7dc296aec4c34acafb820b6.svg" align="middle" width="137.4525405pt" height="18.312383099999998pt"/></p>
 Hyper-parameters can be tuned via gradient ascent on the marginal log-likelihood, or cross-validation on the marginal log-likelihood.
 
