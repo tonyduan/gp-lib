@@ -53,15 +53,14 @@ if __name__ == "__main__":
     kernel = SquaredExponentialKernel(1)
     prior_mean = np.array([0, 0])
     prior_var = np.eye(2) * 5
-    gp_inst = lambda: StochasticMeanGP(prior_mean, prior_var, kernel,
-                                       args.noise_lvl ** 2)
-    idxs = pick_idxs_stoch_gp(x_tr, y_tr, h_tr, args.num_samples, gp_inst, 75)
+    gp = StochasticMeanGP(prior_mean, prior_var, kernel, args.noise_lvl ** 2)
 
-    gp = gp_inst()
+    idxs = pick_idxs(x_tr, y_tr, args.num_samples, gp, h=h_tr, epsilon_pctle=75)
+
     train_loglik = gp.fit(x_tr[idxs,:], y_tr[idxs], h_tr[idxs])
     mean, var = gp.predict(x_te, h_te)
     _, pred, obs = cal_error(y_te, mean, var)
-    mu, sigma = gp.get_posterior_beta()
+    mu, sigma = gp.get_beta()
 
     print("== Greedy")
     print("R2:", r2_score(y_te, mean))
@@ -79,11 +78,10 @@ if __name__ == "__main__":
 
     idxs = np.random.choice(np.arange(x_tr.shape[0]), args.num_samples)
 
-    gp = gp_inst()
     train_loglik = gp.fit(x_tr[idxs,:], y_tr[idxs], h_tr[idxs,:])
     mean, var = gp.predict(x_te, h_te)
     _, pred, obs = cal_error(y_te, mean, var)
-    mu, sigma = gp.get_posterior_beta()
+    mu, sigma = gp.get_beta()
 
     print("== Random")
     print("R2:", r2_score(y_te, mean))

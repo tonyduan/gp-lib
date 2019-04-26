@@ -49,7 +49,7 @@ if __name__ == "__main__":
     print(f"Train likelihood: {marginal_loglik:.4f}")
     print(f"Test likelihood: {gaussian_loglik(y_te, mean, var):.4f}")
 
-    beta_mean, beta_var = gp.get_posterior_beta()
+    beta_mean, beta_var = gp.get_beta()
     print("Posterior beta:", )
     print(f"Mean: {beta_mean.round(3)}")
     print(f"Var:\n{beta_var.round(3)}")

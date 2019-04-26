@@ -42,7 +42,8 @@ class ConstantMeanGP(GaussianProcess):
         l_tr = np.linalg.cholesky(k_tr)
         alpha = np.linalg.solve(l_tr.T, np.linalg.solve(l_tr, y_tr))
         self.cache.update({
-            "x_tr": x_tr, "y_tr": y_tr, "l_tr": l_tr, "alpha": alpha
+            "x_tr": x_tr, "y_tr": y_tr, "l_tr": l_tr, "alpha": alpha,
+            "k_tr": k_tr
         })
         self.trained = True
         return (-np.sum(np.log(np.diag(l_tr))) \
@@ -70,6 +71,10 @@ class ConstantMeanGP(GaussianProcess):
         var = k_te - v.T @ v
         return self.mean + mean, var
 
+    def gradient_update(self):
+        if "k_tr_inv" not in self.cache:
+            self.cache["k_tr_inv"] = np.linalg.inv(self.cache["k_tr"])
+        self.kernel.gradient_update(self.cache)
 
 class StochasticMeanGP(GaussianProcess):
     """
@@ -115,7 +120,8 @@ class StochasticMeanGP(GaussianProcess):
         beta = zeta @ (h_tr.T @ alpha + self.prior_gamma)
         self.cache.update({
             "x_tr": x_tr, "y_tr": y_tr, "l_tr": l_tr, "l_tr_inv": l_tr_inv,
-            "alpha": alpha, "beta": beta, "zeta": zeta, "h_tr": h_tr
+            "alpha": alpha, "beta": beta, "zeta": zeta, "h_tr": h_tr,
+            "k_tr": k_tr
         })
         delta = h_tr @ self.prior_mean - y_tr
         psi = k_tr + h_tr @ self.prior_var @ h_tr.T
@@ -164,3 +170,8 @@ class StochasticMeanGP(GaussianProcess):
         if not self.trained:
             return self.prior_mean, self.prior_var
         return self.cache["beta"], self.cache["zeta"]
+
+    def gradient_update(self):
+        if "k_tr_inv" not in self.cache:
+            self.cache["k_tr_inv"] = np.linalg.inv(self.cache["k_tr"])
+        self.kernel.gradient_update(self.cache)

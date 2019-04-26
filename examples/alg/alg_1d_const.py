@@ -38,10 +38,10 @@ if __name__ == "__main__":
     x_te, y_te = gen_data(n=100, deg=2, noise=args.noise_lvl)
 
     kernel = SquaredExponentialKernel(1)
-    gp_inst = lambda: ConstantMeanGP(0, kernel, args.noise_lvl ** 2)
-    idxs = pick_idxs_const_gp(x_tr, y_tr, args.num_samples, gp_inst, 75)
+    gp = ConstantMeanGP(0, kernel, args.noise_lvl ** 2)
 
-    gp = gp_inst()
+    idxs = pick_idxs(x_tr, y_tr, args.num_samples, gp, 75)
+
     train_loglik = gp.fit(x_tr[idxs,:], y_tr[idxs])
     mean, var = gp.predict(x_te)
 
@@ -57,7 +57,6 @@ if __name__ == "__main__":
 
     idxs = np.random.choice(np.arange(x_tr.shape[0]), args.num_samples)
 
-    gp = gp_inst()
     train_loglik = gp.fit(x_tr[idxs,:], y_tr[idxs])
     mean, var = gp.predict(x_te)
     print("== Random")
