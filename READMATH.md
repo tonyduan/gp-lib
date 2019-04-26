@@ -30,7 +30,7 @@ Note that this is equivalent to the following GP. However, for issues of numeric
 $$
 g(x) \sim GP(h(x)^\intercal b, k(x,x') + h(x)^\intercal B h(x'))
 $$
-Often times the parameter $\beta$ itself will be of interest. After observing $\{(x^{(i)},y^{(i)},h^{(i)}) \}_{i=1}^n$, the posterior distribution over $\beta$ will be normally distributed (thanks to conjugacy of the normal distribution) with the following parameters.
+Often times the mean parameter itself will be of interest. After a set of observations, its posterior distribution will be normally distributed (thanks to conjugacy of the normal distribution) with the following parameters.
 $$
 \begin{align*}
 \mathbb{E}[\beta] & = (B^{-1} + HK^{-1}H^\intercal)^{-1}(HK^{-1}y + B^{-1}b)\\
@@ -79,7 +79,7 @@ mean, var = gp.predict(x_te)
 
 Below we show an example of fitting a quadratic function with a squared exponential kernel and the corresponding confidence interval.
 
-![ex_model](svgs/ex.png"Example model output")
+![ex_model](svgs/ex.png)
 
 For further details the `examples/` folder.
 

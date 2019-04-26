@@ -72,6 +72,9 @@ class ConstantMeanGP(GaussianProcess):
         return self.mean + mean, var
 
     def gradient_update(self):
+        """
+        After fitting the GP, take a gradient descent step on the kernel.
+        """
         if "k_tr_inv" not in self.cache:
             self.cache["k_tr_inv"] = np.linalg.inv(self.cache["k_tr"])
         self.kernel.gradient_update(self.cache)
@@ -172,6 +175,9 @@ class StochasticMeanGP(GaussianProcess):
         return self.cache["beta"], self.cache["zeta"]
 
     def gradient_update(self):
+        """
+        After fitting the GP, take a gradient descent step on the kernel.
+        """
         if "k_tr_inv" not in self.cache:
             self.cache["k_tr_inv"] = np.linalg.inv(self.cache["k_tr"])
         self.kernel.gradient_update(self.cache)

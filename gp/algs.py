@@ -23,9 +23,6 @@ def pick_idxs(x, y, count, gp, epsilon_pctle=75, mu=0.1, h=None):
 
     gp: a GaussianProcess used to track mean, kernel, noise level
 
-    h: m x p array
-        matrix of explicit basis functions
-
     epsilon_pctle: float between [0, 100]
         in order to speed up computation, when fitting the GP to consider
         selecting data point y we truncate elements x for which
@@ -37,6 +34,9 @@ def pick_idxs(x, y, count, gp, epsilon_pctle=75, mu=0.1, h=None):
         at each step we randomly pick from the set of data points with mutual
         information criterion within the top { max - mu * sd(criterion) }
         (in order to add stochasticity when all points have identica info)
+
+    h: m x p array
+        matrix of explicit basis functions, if using StochasticMeanGP
 
     Returns
     -------
