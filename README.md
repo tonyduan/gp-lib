@@ -6,6 +6,10 @@ Last update: April 2019.
 
 Lightweight Python library implementing Gaussian processes for regression [1].
 
+```
+pip3 install gp-lib
+```
+
 A Gaussian process specifies a collection of jointly Gaussian random variables specified by a mean (which below we assume to be zero) and covariance function between two data points.
 
 <p align="center"><img alt="$$&#10;p(Y|X) \sim N(0, \Sigma) \quad \quad \Sigma[i,j] = K(x_i, x_j)&#10;$$" src="svgs/57904d52e3fb892af9f28d9b82a45da8.svg" align="middle" width="293.72361479999995pt" height="17.031940199999998pt"/></p>
