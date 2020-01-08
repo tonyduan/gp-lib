@@ -23,14 +23,14 @@ Below we show an example of fitting a quadratic function with a squared exponent
 ```python
 import numpy as np
 from gp_lib.gp import ConstantMeanGP
-from gp_lib.kernels import SquaredExponentialKernel
+from gp_lib.kernels import SEKernel
 
 # generate some data
 x = np.linspace(-1, 1, 500)[:, np.newaxis]
 y = (x ** 2 + 0.1 * np.random.randn(*x.shape) -1).squeeze()
 
 # initial guess of kernel hyper-parameters
-kernel = SquaredExponentialKernel(10, 1)
+kernel = SEKernel(10, 1)
 gp = ConstantMeanGP(mean=0, kernel=kernel, noise_lvl=0.01)
 
 # tune for optimal hyper-parameters via gradient ascent
@@ -59,7 +59,7 @@ Below we show an example of fitting to a linear relationship with quadratic resi
 ```python
 import numpy as np
 from gp_lib.gp import StochasticMeanGP
-from gp_lib.kernels import SquaredExponentialKernel
+from gp_lib.kernels import SEKernel
 
 # generate some data
 x = np.linspace(-1, 1, 500)[:, np.newaxis]
@@ -68,7 +68,7 @@ y = (x ** 2 + h + 0.1 * np.random.randn(*x.shape) -2).squeeze()
 h = np.c_[h, np.ones_like(h)]
 
 # zero-mean, vague prior 
-kernel = SquaredExponentialKernel(1, 1)
+kernel = SEKernel(1, 1)
 gp = StochasticMeanGP(prior_mean=np.array([0, 0]), 
                       prior_var=5 * np.eye(2), kernel=kernel, 
                       noise_lvl=0.01)

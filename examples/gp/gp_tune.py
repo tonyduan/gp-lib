@@ -49,17 +49,18 @@ def summarize_gp_fit(gp, x_tr, y_tr, x_te, y_te):
 
 if __name__ == "__main__":
 
-    print("== Data Set 1")
-    x_tr, y_tr = gen_data(500, deg=3, noise=0.1, bound=1)
-    x_te, y_te = gen_data(500, deg=3, noise=0.1, bound=1)
+    x_tr, y_tr = gen_data(1000, deg=3, noise=0.1, bound=1)
+    x_te, y_te = gen_data(1000, deg=3, noise=0.1, bound=1)
 
     print("== Squared Exponential Kernel")
-    gp = ConstantMeanGP(0, SquaredExponentialKernel(10, 1), 0.01)
+    gp = ConstantMeanGP(0, SEKernel(10), 0.01)
     print("== Kernel:", gp.kernel)
     summarize_gp_fit(gp, x_tr, y_tr, x_te, y_te)
+    theta = gp.kernel.get_theta()
     for i in range(20):
-        marginal_loglik = gp.fit(x_tr, y_tr)
-        gp.gradient_update()
+        marginal_loglik, grad = gp.fit(x_tr, y_tr, eval_gradient=True)
+        theta = theta + 1.0 * grad
+        gp.kernel.set_theta(theta)
         print(f"Iteration {i}: {marginal_loglik:.2f}")
     print("== Kernel:", gp.kernel)
     summarize_gp_fit(gp, x_tr, y_tr, x_te, y_te)

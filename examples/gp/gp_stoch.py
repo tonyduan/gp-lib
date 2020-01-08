@@ -38,12 +38,14 @@ def plot_calibration(predicted, empirical):
 
 if __name__ == "__main__":
 
+    np.random.seed(12345)
+
     x_tr, y_tr, h_tr = gen_data(200, deg=2, noise=0.1, intcpt=-2)
     x_te, y_te, h_te = gen_data(200, deg=2, noise=0.1, bound=1, intcpt=-2)
 
     print("== Squared Exponential Kernel")
     gp = StochasticMeanGP(np.array([0, 0]), 5 * np.eye(2),
-                          SquaredExponentialKernel(1), 0.01)
+                          SEKernel(1), 0.01)
     marginal_loglik = gp.fit(x_tr, y_tr, h_tr)
     mean, var = gp.predict(x_te, h_te)
     print(f"Train likelihood: {marginal_loglik:.4f}")

@@ -50,7 +50,7 @@ if __name__ == "__main__":
     x_tr, y_tr, h_tr = gen_data(n=20, deg=2, noise=args.noise_lvl)
     x_te, y_te, h_te = gen_data(n=20, deg=2, noise=args.noise_lvl)
 
-    kernel = SquaredExponentialKernel(1)
+    kernel = SEKernel(1)
     prior_mean = np.array([0, 0])
     prior_var = np.eye(2) * 5
     gp = StochasticMeanGP(prior_mean, prior_var, kernel, args.noise_lvl ** 2)

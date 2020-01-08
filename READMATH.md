@@ -1,6 +1,6 @@
 ### Gaussian processes
 
-Last update: April 2019.
+Last update: January 2020.
 
 ---
 
@@ -13,40 +13,18 @@ pip3 install gp-lib
 A Gaussian process specifies a collection of jointly Gaussian random variables specified by a mean (which below we assume to be zero) and covariance function between two data points.
 
 $$
-p(Y|X) \sim N(0, \Sigma) \quad \quad \Sigma[i,j] = K(x_i, x_j)
+f \sim N(0, \Sigma) \quad\quad y \sim N(f, \sigma^2)\quad\quad \Sigma[i,j] = k(x_i, x_j)
 $$
 
 Predictions are made by conditioning on a subset of variables.
 
 $$
-p(Y|X',Y',X) \sim N(\mu, \Sigma)\quad\quad \mu = K(X,X')K(X',X')^{-1}Y, \quad\quad\Sigma = K(X,X) - K(X,X')K(X',X')^{-1}K(X',X)
+\begin{align*}
+f|y' & \sim N(\mu, \Sigma) + \sigma^2\\
+\mu & = k(x,x')(k(x',x')+\sigma^2I)^{-1}y\\
+\Sigma &= k(x,x) - k(x,x')(k(x',x')+ \sigma^2I)^{-1}k(x',x)
+\end{align*}
 $$
-
-Below we show an example of fitting a quadratic function with a squared exponential kernel.
-
-```python
-import numpy as np
-from gp_lib.gp import ConstantMeanGP
-from gp_lib.kernels import SquaredExponentialKernel
-
-# generate some data
-x = np.linspace(-1, 1, 500)[:, np.newaxis]
-y = (x ** 2 + 0.1 * np.random.randn(*x.shape) -1).squeeze()
-
-# initial guess of kernel hyper-parameters
-kernel = SquaredExponentialKernel(10, 1)
-gp = ConstantMeanGP(mean=0, kernel=kernel, noise_lvl=0.01)
-
-# tune for optimal hyper-parameters via gradient ascent
-for i in range(20):
-    marginal_loglik = gp.fit(x, y)
-    gp.gradient_update()
-    print(f"Iteration {i}: {marginal_loglik:.2f}")
-print("== Kernel:", gp.kernel)
-
-# predicted posterior mean and variance
-mean, var = gp.predict(x)
-```
 
 #### Explicit basis functions
 
@@ -72,7 +50,7 @@ Below we show an example of fitting to a linear relationship with quadratic resi
 ```python
 import numpy as np
 from gp_lib.gp import StochasticMeanGP
-from gp_lib.kernels import SquaredExponentialKernel
+from gp_lib.kernels import SEKernel
 
 # generate some data
 x = np.linspace(-1, 1, 500)[:, np.newaxis]
@@ -81,7 +59,7 @@ y = (x ** 2 + h + 0.1 * np.random.randn(*x.shape) -2).squeeze()
 h = np.c_[h, np.ones_like(h)]
 
 # zero-mean, vague prior 
-kernel = SquaredExponentialKernel(1, 1)
+kernel = SEKernel(1, 1)
 gp = StochasticMeanGP(prior_mean=np.array([0, 0]), 
                       prior_var=5 * np.eye(2), kernel=kernel, 
                       noise_lvl=0.01)
@@ -101,11 +79,15 @@ $$
 
 #### Supported kernels
 
-Support for more kernels is expected to be added, but for now we have the SE kernel and dot product kernel.
+For now we have the SE kernel and dot product kernel.
 $$
-K_\mathrm{SE}(x,y) = \sigma^2\exp\left(-\frac{1}{2\ell^2}||x-y||^2_2\right) \quad\quad K_\mathrm{dot}(x,y) = \sigma^2 x^\intercal y
+K_\mathrm{SE}(x,y) = \exp\left(-\frac{1}{2\ell^2}||x-y||^2_2\right) \quad\quad K_\mathrm{dot}(x,y) = x^\intercal y
 $$
 Hyper-parameters can be tuned via gradient ascent on the marginal log-likelihood, or cross-validation on the marginal log-likelihood.
+
+**Sparse GPs**
+
+We support variational learning of sparse GPs [4].
 
 #### Optimal sensor placement
 
@@ -130,6 +112,8 @@ For further details the `examples/` folder.
 [2] Jiaxuan You, Xiaocheng Li, Melvin Low, David Lobell, Stefano Ermon. Deep Gaussian Process for Crop Yield Prediction Based on Remote Sensing Data. in *Thirty-First AAAI Conference on Artificial Intelligence* (2017).
 
 [3] Andreas Krause, Ajit Singh, and Carlos Guestrin. 2008. Near-Optimal Sensor Placements in Gaussian Processes: Theory, Efficient Algorithms and Empirical Studies. J. Mach. Learn. Res. 9 (June 2008), 235-284.
+
+[4] Titsias, M. (2009). Variational Learning of Inducing Variables in Sparse Gaussian Processes. In International Conference on Artiﬁcial Intelligence and Statistics, pp. 567–574.
 
 #### License
 

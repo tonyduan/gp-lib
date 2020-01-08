@@ -37,7 +37,7 @@ if __name__ == "__main__":
     x_tr, y_tr = gen_data(n=100, deg=2, noise=args.noise_lvl)
     x_te, y_te = gen_data(n=100, deg=2, noise=args.noise_lvl)
 
-    kernel = SquaredExponentialKernel(1)
+    kernel = SEKernel(1)
     gp = ConstantMeanGP(0, kernel, args.noise_lvl ** 2)
 
     idxs = pick_idxs(x_tr, y_tr, args.num_samples, gp, 75)
