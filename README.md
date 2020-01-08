@@ -1,6 +1,6 @@
 ### Gaussian processes
 
-Last update: April 2019.
+Last update: January 2020.
 
 ---
 
@@ -12,37 +12,11 @@ pip3 install gp-lib
 
 A Gaussian process specifies a collection of jointly Gaussian random variables specified by a mean (which below we assume to be zero) and covariance function between two data points.
 
-<p align="center"><img alt="$$&#10;p(Y|X) \sim N(0, \Sigma) \quad \quad \Sigma[i,j] = K(x_i, x_j)&#10;$$" src="svgs/57904d52e3fb892af9f28d9b82a45da8.svg" align="middle" width="293.72361479999995pt" height="17.031940199999998pt"/></p>
+<p align="center"><img alt="$$&#10;f \sim N(0, \Sigma) \quad\quad y \sim N(f, \sigma^2)\quad\quad \Sigma[i,j] = k(x_i, x_j)&#10;$$" src="svgs/71d01dea05b3bf4d30f70dcd4b9b1675.svg" align="middle" width="368.5485144pt" height="18.905967299999997pt"/></p>
 
 Predictions are made by conditioning on a subset of variables.
 
-<p align="center"><img alt="$$&#10;p(Y|X',Y',X) \sim N(\mu, \Sigma)\quad\quad \mu = K(X,X')K(X',X')^{-1}Y, \quad\quad\Sigma = K(X,X) - K(X,X')K(X',X')^{-1}K(X',X)&#10;$$" src="svgs/eee976b0b8359ea41e650a6caab13130.svg" align="middle" width="801.4819081499999pt" height="18.312383099999998pt"/></p>
-
-Below we show an example of fitting a quadratic function with a squared exponential kernel.
-
-```python
-import numpy as np
-from gp_lib.gp import ConstantMeanGP
-from gp_lib.kernels import SEKernel
-
-# generate some data
-x = np.linspace(-1, 1, 500)[:, np.newaxis]
-y = (x ** 2 + 0.1 * np.random.randn(*x.shape) -1).squeeze()
-
-# initial guess of kernel hyper-parameters
-kernel = SEKernel(10, 1)
-gp = ConstantMeanGP(mean=0, kernel=kernel, noise_lvl=0.01)
-
-# tune for optimal hyper-parameters via gradient ascent
-for i in range(20):
-    marginal_loglik = gp.fit(x, y)
-    gp.gradient_update()
-    print(f"Iteration {i}: {marginal_loglik:.2f}")
-print("== Kernel:", gp.kernel)
-
-# predicted posterior mean and variance
-mean, var = gp.predict(x)
-```
+<p align="center"><img alt="$$&#10;\begin{align*}&#10;f|y' &amp; \sim N(\mu, \Sigma) + \sigma^2\\&#10;\mu &amp; = k(x,x')(k(x',x')+\sigma^2I)^{-1}y\\&#10;\Sigma &amp;= k(x,x) - k(x,x')(k(x',x')+ \sigma^2I)^{-1}k(x',x)&#10;\end{align*}&#10;$$" src="svgs/ef38f2ca5981d9e73938b2bea1c5f713.svg" align="middle" width="356.32604204999996pt" height="71.70438164999999pt"/></p>
 
 #### Explicit basis functions
 
@@ -84,9 +58,13 @@ This results in the following posterior estimate.
 
 #### Supported kernels
 
-Support for more kernels is expected to be added, but for now we have the SE kernel and dot product kernel.
-<p align="center"><img alt="$$&#10;K_\mathrm{SE}(x,y) = \sigma^2\exp\left(-\frac{1}{2\ell^2}||x-y||^2_2\right) \quad\quad K_\mathrm{dot}(x,y) = \sigma^2 x^\intercal y&#10;$$" src="svgs/75a32a7a9151e5d5fb31929e618a05ec.svg" align="middle" width="439.10142705pt" height="39.452455349999994pt"/></p>
+For now we have the SE kernel and dot product kernel.
+<p align="center"><img alt="$$&#10;K_\mathrm{SE}(x,y) = \exp\left(-\frac{1}{2\ell^2}||x-y||^2_2\right) \quad\quad K_\mathrm{dot}(x,y) = x^\intercal y&#10;$$" src="svgs/7dee432eff5489350f4ede55ff939899.svg" align="middle" width="401.6470854pt" height="39.452455349999994pt"/></p>
 Hyper-parameters can be tuned via gradient ascent on the marginal log-likelihood, or cross-validation on the marginal log-likelihood.
+
+**Sparse GPs**
+
+We support variational learning of sparse GPs [4].
 
 #### Optimal sensor placement
 
@@ -109,6 +87,8 @@ For further details the `examples/` folder.
 [2] Jiaxuan You, Xiaocheng Li, Melvin Low, David Lobell, Stefano Ermon. Deep Gaussian Process for Crop Yield Prediction Based on Remote Sensing Data. in *Thirty-First AAAI Conference on Artificial Intelligence* (2017).
 
 [3] Andreas Krause, Ajit Singh, and Carlos Guestrin. 2008. Near-Optimal Sensor Placements in Gaussian Processes: Theory, Efficient Algorithms and Empirical Studies. J. Mach. Learn. Res. 9 (June 2008), 235-284.
+
+[4] Titsias, M. (2009). Variational Learning of Inducing Variables in Sparse Gaussian Processes. In International Conference on Artiﬁcial Intelligence and Statistics, pp. 567–574.
 
 #### License
 

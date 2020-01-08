@@ -3,7 +3,7 @@ import setuptools
 
 setuptools.setup(
     name="gp-lib",
-    version="0.0.3",
+    version="0.0.4",
     author="Tony Duan",
     author_email="tonyduan@cs.stanford.edu",
     description="Lightweight Python library for GP regression.",
