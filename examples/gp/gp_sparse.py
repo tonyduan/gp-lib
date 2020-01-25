@@ -47,10 +47,11 @@ def summarize_gp_fit(gp, x_tr, y_tr, x_te, y_te):
     plot_predictions(x_tr, y_tr, x_te, mean, var)
     ind_mean, ind_var = gp.predict(x_tr[idxs])
     ind_sd = np.sqrt(np.diag(ind_var))
-    plt.scatter(x_tr[idxs].squeeze(), ind_mean, marker="x", color="red")
+    plt.scatter(x_tr[idxs].squeeze(), ind_mean, marker="x", color="red", label="Inducing")
     plt.scatter(x_tr[idxs].squeeze(), ind_mean + 1.96 * ind_sd, marker="o", color="red")
     plt.scatter(x_tr[idxs].squeeze(), ind_mean - 1.96 * ind_sd, marker="o", color="red")
-    plt.scatter(x_tr[idxs].squeeze(), y_tr[idxs], marker="x", color="blue")
+    plt.scatter(x_tr[idxs].squeeze(), y_tr[idxs], marker="x", color="blue", label="Naive")
+    plt.legend()
     plt.show()
 
 
@@ -69,3 +70,12 @@ if __name__ == "__main__":
     print("== Squared Exponential Kernel")
     gp = SparseGP(0, ProductKernel([SEKernel(1), ConstantKernel()]), 0.1)
     summarize_gp_fit(gp, x_tr, y_tr, x_te, y_te)
+
+    gp = ConstantMeanGP(0, ProductKernel([SEKernel(1), ConstantKernel()]), 0.1)
+    result = gp.tune(x_tr, y_tr, verbose=False)
+    mean, var = gp.predict(x_te)
+    print(f"== Marginal log-likelihood lower bound: {-result.fun.squeeze():.2f}")
+    print(f"== Test log-likelihoood: {gaussian_loglik(y_te, mean, var):.2f}")
+    plot_predictions(x_tr, y_tr, x_te, mean, var)
+    plt.show()
+
