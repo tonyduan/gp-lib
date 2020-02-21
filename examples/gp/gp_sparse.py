@@ -68,6 +68,10 @@ if __name__ == "__main__":
     y_te = y_te / np.std(y_te)
 
     print("== Squared Exponential Kernel")
+    gp = SparseGP(0, SumKernel([SEKernel(1), WhiteKernel(0.1)]), 0.01)
+    summarize_gp_fit(gp, x_tr, y_tr, x_te, y_te)
+
+    print("== Squared Exponential Kernel")
     gp = SparseGP(0, ProductKernel([SEKernel(1), ConstantKernel()]), 0.1)
     summarize_gp_fit(gp, x_tr, y_tr, x_te, y_te)
 
@@ -76,6 +80,7 @@ if __name__ == "__main__":
     mean, var = gp.predict(x_te)
     print(f"== Marginal log-likelihood lower bound: {-result.fun.squeeze():.2f}")
     print(f"== Test log-likelihoood: {gaussian_loglik(y_te, mean, var):.2f}")
+    print(f"== Kernel: {gp.kernel}")
     plot_predictions(x_tr, y_tr, x_te, mean, var)
     plt.show()
 

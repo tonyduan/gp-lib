@@ -118,6 +118,44 @@ class ProductKernel(Kernel):
                           for k in self.kernels if k.n_parameters > 0])
 
 
+class WhiteKernel(Kernel):
+    """
+    White noise kernel.
+        k(x, y) = 1{x == y} * c
+
+    Parameters
+    ----------
+    c: float
+    """
+    n_parameters = 1
+
+    def __init__(self, c=1.0):
+        self.c = c
+        self.cache = {}
+
+    def __call__(self, x, y):
+        if x.shape != y.shape:
+            self.cache["k"] = np.zeros((len(x), len(y)))
+        else:
+            self.cache["k"] = np.diag(np.product(x == y, axis=1)) * self.c
+        return self.cache["k"]
+
+    def __repr__(self):
+        return f"WhiteKernel({self.c:.2f})"
+
+    def trace_x_x(self, x):
+        return x.shape[0] * self.c
+
+    def get_theta(self):
+        return np.array([np.log(self.c)])
+
+    def set_theta(self, theta):
+        self.c = np.exp(theta.squeeze())
+        
+    def jacobian(self):
+        return np.array([self.cache["k"]])
+
+
 class ConstantKernel(Kernel):
     """
     Constant kernel.
