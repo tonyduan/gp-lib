@@ -151,7 +151,7 @@ class WhiteKernel(Kernel):
 
     def set_theta(self, theta):
         self.c = np.exp(theta.squeeze())
-        
+
     def jacobian(self):
         return np.array([self.cache["k"]])
 

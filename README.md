@@ -12,22 +12,59 @@ pip3 install gp-lib
 
 A Gaussian process specifies a collection of jointly Gaussian random variables specified by a mean (which below we assume to be zero) and covariance function between two data points.
 
-<p align="center"><img alt="$$&#10;f \sim N(0, \Sigma) \quad\quad y \sim N(f, \sigma^2)\quad\quad \Sigma[i,j] = k(x_i, x_j)&#10;$$" src="svgs/71d01dea05b3bf4d30f70dcd4b9b1675.svg" align="middle" width="368.5485144pt" height="18.905967299999997pt"/></p>
+```math
+f \sim N(0, \Sigma) \quad\quad y \sim N(f, \sigma^2 I)\quad\quad \Sigma[i,j] = k(x_i, x_j)
+```
 
 Predictions are made by conditioning on a subset of variables.
 
-<p align="center"><img alt="$$&#10;\begin{align*}&#10;f|y' &amp; \sim N(\mu, \Sigma) + \sigma^2\\&#10;\mu &amp; = k(x,x')(k(x',x')+\sigma^2I)^{-1}y\\&#10;\Sigma &amp;= k(x,x) - k(x,x')(k(x',x')+ \sigma^2I)^{-1}k(x',x)&#10;\end{align*}&#10;$$" src="svgs/ef38f2ca5981d9e73938b2bea1c5f713.svg" align="middle" width="356.32604204999996pt" height="71.70438164999999pt"/></p>
+```math
+\begin{align*}
+f|x,y,x_\ast & \sim N(\mu, \Sigma)\\
+\mu & = k(x_\ast,x)(k(x,x)+\sigma^2I)^{-1}y\\
+\Sigma &= k(x_\ast,x_\ast) - k(x_\ast,x)(k(x,x)+ \sigma^2I)^{-1}k(x,x_\ast),
+\end{align*}
+```
+where $\{x, y\}$ and $\{x_\ast,y_\ast\}$ denote the train and test split respectively. 
+
+Notice this requires inversion of an $M \times M$ matrix where $M$ is the size of the training set. Runtime is $O(M^3)$.
+
+Suppose we use a dot product kernel $k(x_i,x_j) = x_i^\intercal x_j$. Then we recover Bayesian Linear Regression.
+```math
+\begin{align*}
+\mu|x,y,x_\ast & = x_\ast x^\intercal(xx^\intercal + \sigma^2 I)^{-1}y & \triangleq x_\ast w
+\end{align*}
+```
+
+This expression is equivalent to the "kernel trick" variant of regularized least squares (a.k.a. "ridge regression").
+```math
+\begin{align*}
+\underset{z}{\arg\min} \frac{1}{2}\|Az- b\|^2+ \frac{\lambda}{2} \|z\|^2 & = (A^\intercal A + \lambda I)^{-1}b\\
+ & = A^\intercal (AA^\intercal +\lambda I)^{-1}b,
+\end{align*}
+```
+
+where the equivalency above arises from the Matrix Inversion Lemma.
 
 #### Explicit basis functions
 
-One unique aspect of our code is it provides out-of-the-box support for GPs with *explicit basis functions*, and the corresponding closed form solutions described in Chapter 2.7 of [1]. 
+One unique aspect of our code is it provides out-of-the-box support for GPs with *explicit basis functions*, and the corresponding closed form solutions described in Chapter 2.7 of [1].
 
-Specifically, we model a GP with mean given by <img alt="$h(x)^\intercal\beta$" src="svgs/e9f5960b324a18290548fec1bd675f4f.svg" align="middle" width="50.081941799999996pt" height="24.65753399999998pt"/>, where <img alt="$\beta$" src="svgs/8217ed3c32a785f0b5aad4055f432ad8.svg" align="middle" width="10.16555099999999pt" height="22.831056599999986pt"/> is a parameter with normal prior. It can be particularly useful to specify basis functions <img alt="$h(x)$" src="svgs/82b61730744eb40135709391ec01cbdb.svg" align="middle" width="31.651535849999988pt" height="24.65753399999998pt"/> with representations learned from deep neural networks [2].
-<p align="center"><img alt="$$&#10;g(x) = f(x) + h(x)^\intercal\beta, \quad f(x) \sim GP(0, k(x,x')), \quad \beta\sim \mathcal{N}(b,B)&#10;$$" src="svgs/20b71fb45688352e4cbfa545ae514244.svg" align="middle" width="451.17635805000003pt" height="17.2895712pt"/></p>
+Specifically, we model a GP with mean given by $h(x)^\intercal\beta$, where $\beta$ is a parameter with normal prior. It can be particularly useful to specify basis functions $h(x)$ with representations learned from deep neural networks [2].
+```math
+g(x) = f(x) + h(x)^\intercal\beta, \quad f(x) \sim \mathrm{GP}(0, k(x,x')), \quad \beta\sim \mathcal{N}(b,B)
+```
 Note that this is equivalent to the following GP. However, for issues of numerical stability it is recommended to use the explicit closed form solutions that we provide instead of naively implementing the below.
-<p align="center"><img alt="$$&#10;g(x) \sim GP(h(x)^\intercal b, k(x,x') + h(x)^\intercal B h(x'))&#10;$$" src="svgs/554de23245299f18d8cfe7597f274d3d.svg" align="middle" width="307.485255pt" height="17.2895712pt"/></p>
+```math
+g(x) \sim \mathrm{GP}(h(x)^\intercal b, k(x,x') + h(x)^\intercal B h(x'))
+```
 Often times the mean parameter itself will be of interest. After a set of observations, its posterior distribution will be normally distributed (thanks to conjugacy of the normal distribution) with the following parameters.
-<p align="center"><img alt="$$&#10;\begin{align*}&#10;\mathbb{E}[\beta] &amp; = (B^{-1} + HK^{-1}H^\intercal)^{-1}(HK^{-1}y + B^{-1}b)\\&#10;\mathrm{Var}[\beta] &amp; = (B^{-1}+HK^{-1}H^\intercal)^{-1}&#10;\end{align*}&#10;$$" src="svgs/d605fe355afd910d88d3ce8fb141a7b8.svg" align="middle" width="346.657179pt" height="45.0083832pt"/></p>
+```math
+\begin{align*}
+\mathbb{E}[\beta] & = (B^{-1} + HK^{-1}H^\intercal)^{-1}(HK^{-1}y + B^{-1}b)\\
+\mathrm{Var}[\beta] & = (B^{-1}+HK^{-1}H^\intercal)^{-1}
+\end{align*}
+```
 Below we show an example of fitting to a linear relationship with quadratic residuals.
 
 ```python
@@ -41,10 +78,10 @@ h = np.linspace(-1, 1, 500)[:, np.newaxis]
 y = (x ** 2 + h + 0.1 * np.random.randn(*x.shape) -2).squeeze()
 h = np.c_[h, np.ones_like(h)]
 
-# zero-mean, vague prior 
+# zero-mean, vague prior
 kernel = SEKernel(1, 1)
-gp = StochasticMeanGP(prior_mean=np.array([0, 0]), 
-                      prior_var=5 * np.eye(2), kernel=kernel, 
+gp = StochasticMeanGP(prior_mean=np.array([0, 0]),
+                      prior_var=5 * np.eye(2), kernel=kernel,
                       noise_lvl=0.01)
 
 # fit and make predictions
@@ -54,12 +91,18 @@ beta_mean, beta_var = gp.get_beta()
 ```
 
 This results in the following posterior estimate.
-<p align="center"><img alt="$$&#10;\mathbb{E}[\beta] =\begin{bmatrix} 0.844 \\-0.188\end{bmatrix}&#10;\quad\quad &#10;\mathrm{Var}[\beta] = \begin{bmatrix} 0.261 &amp; -0.\\-0. &amp;     0.464\end{bmatrix}&#10;$$" src="svgs/7b4ece6389ef13a5a113e6d4f28a2fc1.svg" align="middle" width="330.87931634999995pt" height="39.452455349999994pt"/></p>
+```math
+\mathbb{E}[\beta] =\begin{bmatrix} 0.844 \\-0.188\end{bmatrix}
+\quad\quad
+\mathrm{Var}[\beta] = \begin{bmatrix} 0.261 & -0.\\-0. &     0.464\end{bmatrix}
+```
 
 #### Supported kernels
 
 For now we have the SE kernel and dot product kernel.
-<p align="center"><img alt="$$&#10;K_\mathrm{SE}(x,y) = \exp\left(-\frac{1}{2\ell^2}||x-y||^2_2\right) \quad\quad K_\mathrm{dot}(x,y) = x^\intercal y&#10;$$" src="svgs/7dee432eff5489350f4ede55ff939899.svg" align="middle" width="401.6470854pt" height="39.452455349999994pt"/></p>
+```math
+K_\mathrm{SE}(x,y) = \exp\left(-\frac{1}{2\ell^2}||x-y||^2_2\right) \quad\quad K_\mathrm{dot}(x,y) = x^\intercal y
+```
 Hyper-parameters can be tuned via gradient ascent on the marginal log-likelihood, or cross-validation on the marginal log-likelihood.
 
 **Sparse GPs**
@@ -69,7 +112,9 @@ We support variational learning of sparse GPs [4].
 #### Optimal sensor placement
 
 We implement as well a greedy selection algorithm for near-optimal sensor placement with Gaussian processes [3]. The intuition is that we want to pick a set of fixed size to maximize the *mutual information* between selected data points and non-selected data points.
-<p align="center"><img alt="$$&#10;\mathcal{A} = \underset{\mathcal{A} \subset \mathcal{V}:|\mathcal{A}| = k}{\arg\max}\enspace I(\mathcal{A}; \mathcal{V} \setminus \mathcal{A})&#10;$$" src="svgs/da12add3bd7a6c02b827fc1db32c4183.svg" align="middle" width="194.59628759999998pt" height="29.771669399999997pt"/></p>
+```math
+\mathcal{A} = \underset{\mathcal{A} \subset \mathcal{V}:|\mathcal{A}| = k}{\arg\max}\enspace I(\mathcal{A}; \mathcal{V} \setminus \mathcal{A})
+```
 This process is approximated in a greedy manner, picking out the next data point that maximizes mutual information between the selection and all remaining items.
 
 #### Usage

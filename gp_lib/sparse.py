@@ -38,7 +38,7 @@ class SparseGP(GaussianProcess):
         y_tr = y_tr - self.mean
 
         # compute kernels and jacobians (add diagonal to k_ind for numerical stability)
-        k_ind = self.kernel(x_ind, x_ind) + self.eps * np.eye(k, k) 
+        k_ind = self.kernel(x_ind, x_ind) + self.eps * np.eye(k, k)
         jac_k_ind = self.kernel.jacobian() if eval_gradient else None
         k_tr_ind = self.kernel(x_tr, x_ind)
         jac_k_tr_ind = self.kernel.jacobian() if eval_gradient else None
